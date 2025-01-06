@@ -3,10 +3,13 @@ package db
 import (
 	"database/sql"
 	"log"
+	"math/rand"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+var CHARSET string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func CreateDb() {
 	log.Print("Creating db")
@@ -34,7 +37,7 @@ func CreateDb() {
 	}
 	defer db.Close()
 
-	// create table with id cou
+	// create table
 	sqlStmt := `
 		create table urls (
 			"id" text not null primary key,
@@ -52,6 +55,54 @@ func CreateDb() {
 	log.Print("Database created")
 }
 
-func Add(a, b int) int {
-	return a + b
+func CreateId(url string) {
+	id := generateId()
+
+	db, err := sql.Open("sqlite3", "tmp/shortener.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO urls(id, url) values(?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	_, err = stmt.Exec(id, url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Created id %s with url %s", id, url)
+}
+
+/* ======= Private Methods =========== */
+func checkIdUsed(id string) bool {
+	db, err := sql.Open("sqlite3", "tmp/shortener.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM urls WHERE id = ?", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	return rows.Next()
+}
+
+func generateId() string {
+	for ;; {
+		id := make([]byte, 6)
+		for i := 0; i < 6; i++ {
+			id[i] = CHARSET[rand.Intn(len(CHARSET))]
+		}
+
+		if !checkIdUsed(string(id)) {
+			return string(id)
+		}
+	}
 }

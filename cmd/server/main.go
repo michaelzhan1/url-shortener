@@ -11,6 +11,7 @@ import (
 
 func main() {
 	db.CreateDb()
+	db.CreateId("https://www.google.com")
 	port := 8080
 	portStr := fmt.Sprintf(":%d", port)
 	log.Println("Starting server on", portStr)
