@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"math/rand"
 	"os"
@@ -55,7 +56,7 @@ func CreateDb() {
 	log.Print("Database created")
 }
 
-func CreateId(url string) {
+func CreateId(url string) string {
 	id := generateId()
 
 	db, err := sql.Open("sqlite3", "tmp/shortener.db")
@@ -75,6 +76,38 @@ func CreateId(url string) {
 	}
 
 	log.Printf("Created id %s with url %s", id, url)
+	return id
+}
+
+func CreateCustomId(id, url string) (string, error) {
+	idExists := checkIdUsed(id)
+
+	if idExists {
+		return "", errors.New("Id already exists")
+	}
+
+	// TODO: finish
+}
+
+func GetUrl(id string) string {
+	db, err := sql.Open("sqlite3", "tmp/shortener.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM urls WHERE id = ?", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var url string
+	for rows.Next() {
+		rows.Scan(&id, &url)
+	}
+
+	return url
 }
 
 /* ======= Private Methods =========== */
