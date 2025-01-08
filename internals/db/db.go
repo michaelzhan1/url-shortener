@@ -41,7 +41,7 @@ func CreateDb() {
 	// create table
 	sqlStmt := `
 		create table urls (
-			"id" text not null primary key,
+			"id" text not null primary key unique,
 			"url" text not null
 		)
 	`
@@ -79,14 +79,51 @@ func CreateId(url string) string {
 	return id
 }
 
+func RemoveId(id string) {
+	db, err := sql.Open("sqlite3", "tmp/shortener.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM urls WHERE id = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	_, err = stmt.Exec(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Removed id %s", id)
+}
+
 func CreateCustomId(id, url string) (string, error) {
 	idExists := checkIdUsed(id)
 
 	if idExists {
-		return "", errors.New("Id already exists")
+		return "", errors.New("id already exists")
 	}
 
-	// TODO: finish
+	db, err := sql.Open("sqlite3", "tmp/shortener.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO urls(id, url) values(?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = stmt.Exec(id, url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Created id %s with url %s", id, url)
+	return id, nil
 }
 
 func GetUrl(id string) string {

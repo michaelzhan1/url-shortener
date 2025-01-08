@@ -12,4 +12,7 @@ clean:
 	if [ -d bin ]; then rm -rf bin; fi
 	if [ -d tmp ]; then rm -rf tmp; fi
 
-.PHONY: all build run clean
+test:
+	go test -v ./...
+
+.PHONY: all build run clean test
