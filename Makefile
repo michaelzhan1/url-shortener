@@ -12,7 +12,10 @@ clean:
 	if [ -d bin ]; then rm -rf bin; fi
 	if [ -d tmp ]; then rm -rf tmp; fi
 
-test:
-	go test -v ./...
+unit:
+	go test -v ./internals/...
+
+integ:
+	go test -v ./test/integration/...
 
 .PHONY: all build run clean test
