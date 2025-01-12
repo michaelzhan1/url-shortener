@@ -24,7 +24,7 @@ func SetupServer() *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/new", handlers.NewUrlHandler)
 	mux.HandleFunc("GET /api/new/custom", handlers.NewCustomUrlHandler)
-	mux.HandleFunc("GET /{id}", handlers.UrlGetterHandler)
+	mux.HandleFunc("GET /{id}/{$}", handlers.UrlGetterHandler)
 
 	server := &http.Server{
 		Addr:    port,
