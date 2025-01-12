@@ -18,7 +18,6 @@ func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
 
 	tempUrl, _ := url.Parse(r.URL.String())
 	params, _ := url.ParseQuery(tempUrl.RawQuery)
-	log.Printf("Params: %s", params)
 
 	if params["url"] == nil {
 		http.Error(w, "Missing url parameter", http.StatusBadRequest)
@@ -26,10 +25,8 @@ func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlStr, _ := url.QueryUnescape(params["url"][0])
-	log.Printf("URL: %s", urlStr)
 
 	id := db.CreateId(urlStr)
-	log.Printf("ID: %s", id)
 
 	fmt.Fprintf(w, "%s", id)
 }
@@ -43,7 +40,6 @@ func NewCustomUrlHandler(w http.ResponseWriter, r *http.Request) {
 	
 	tempUrl, _ := url.Parse(r.URL.String())
 	params, _ := url.ParseQuery(tempUrl.RawQuery)
-	log.Printf("Params: %s", params)
 	
 	if params["url"] == nil || params["id"] == nil {
 		http.Error(w, "Missing id or url parameter", http.StatusBadRequest)
@@ -52,9 +48,6 @@ func NewCustomUrlHandler(w http.ResponseWriter, r *http.Request) {
 	
 	urlStr, _ := url.QueryUnescape(params["url"][0])
 	id, _ := url.QueryUnescape(params["id"][0])
-	
-	log.Printf("ID: %s", id)
-	log.Printf("URL: %s", urlStr)
 	
 	id, _ = db.CreateCustomId(id, urlStr)
 	
@@ -70,7 +63,6 @@ func UrlGetterHandler(w http.ResponseWriter, r *http.Request) {
 	
 	tempUrl, _ := url.Parse(r.URL.String())
 	params, _ := url.ParseQuery(tempUrl.RawQuery)
-	log.Printf("Params: %s", params)
 	
 	if params["id"] == nil {
 		http.Error(w, "Missing id parameter", http.StatusBadRequest)
@@ -78,10 +70,8 @@ func UrlGetterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	id, _ := url.QueryUnescape(params["id"][0])
-	log.Printf("ID: %s", id)
 	
 	url := db.GetUrl(id)
-	log.Printf("URL: %s", url)
 	
 	fmt.Fprintf(w, "%s", url)
 }
