@@ -22,10 +22,9 @@ func SetupServer() *http.Server {
 	log.Println("Starting server on", port)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/new", handlers.NewUrlHandler)
-	mux.HandleFunc("/new/custom", handlers.NewCustomUrlHandler)
-	mux.HandleFunc("/get", handlers.UrlGetterHandler)
-	mux.HandleFunc("/favicon.ico", handlers.DoNothingHandler)
+	mux.HandleFunc("GET /api/new", handlers.NewUrlHandler)
+	mux.HandleFunc("GET /api/new/custom", handlers.NewCustomUrlHandler)
+	mux.HandleFunc("GET /{id}", handlers.UrlGetterHandler)
 
 	server := &http.Server{
 		Addr:    port,

@@ -29,7 +29,7 @@ func TestNewUrl(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 	goalUrl := "https://www.example.com"
-	httpUrl := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/new?url=" + url.QueryEscape(goalUrl)
+	httpUrl := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/api/new?url=" + url.QueryEscape(goalUrl)
 
 	resp, err := http.Get(httpUrl)
 	if err != nil {
@@ -50,7 +50,7 @@ func TestNewUrl(t *testing.T) {
 	id := string(body)
 	
 	// get url back from db
-	httpUrl = os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/get?id=" + id
+	httpUrl = os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/" + id
 	resp, err = http.Get(httpUrl)
 	if err != nil {
 		t.Errorf("Failed to make request: %v", err)
@@ -90,7 +90,7 @@ func TestCustomUrl(t *testing.T) {
 	time.Sleep(1 * time.Second)
 	goalId := "abcde"
 	goalUrl := "https://www.example.com"
-	httpUrl := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/new/custom?url=" + url.QueryEscape(goalUrl) + "&id=" + goalId
+	httpUrl := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/api/new/custom?url=" + url.QueryEscape(goalUrl) + "&id=" + goalId
 
 	resp, err := http.Get(httpUrl)
 	if err != nil {
@@ -103,7 +103,7 @@ func TestCustomUrl(t *testing.T) {
 	}
 	
 	// get url back from db
-	httpUrl = os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/get?id=" + goalId
+	httpUrl = os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/" + goalId
 	resp, err = http.Get(httpUrl)
 	if err != nil {
 		t.Errorf("Failed to make request: %v", err)

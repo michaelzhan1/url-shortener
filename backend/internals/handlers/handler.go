@@ -60,21 +60,10 @@ func UrlGetterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
-	tempUrl, _ := url.Parse(r.URL.String())
-	params, _ := url.ParseQuery(tempUrl.RawQuery)
-	
-	if params["id"] == nil {
-		http.Error(w, "Missing id parameter", http.StatusBadRequest)
-		return
-	}
-	
-	id, _ := url.QueryUnescape(params["id"][0])
+
+	id := r.PathValue("id")
 	
 	url := db.GetUrl(id)
 	
 	fmt.Fprintf(w, "%s", url)
-}
-
-func DoNothingHandler(w http.ResponseWriter, r *http.Request) {
 }
