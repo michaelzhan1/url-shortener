@@ -13,6 +13,7 @@ import (
 	r "github.com/michaelzhan1/url-shortener/internals/runtime"
 )
 
+// TODO: use httptest
 func TestNewUrl(t *testing.T) {
 	loadDotEnv()
 	defer cleanup()
