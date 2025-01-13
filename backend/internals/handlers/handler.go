@@ -54,7 +54,6 @@ func NewCustomUrlHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", id)
 }
 
-// TODO: redirect from here
 func UrlGetterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		log.Printf("Method %s not allowed", r.Method)
@@ -64,7 +63,7 @@ func UrlGetterHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := r.PathValue("id")
 	
-	url := db.GetUrl(id)
-	
-	fmt.Fprintf(w, "%s", url)
+	url, _ := url.QueryUnescape(db.GetUrl(id))
+
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }

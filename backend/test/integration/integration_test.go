@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,26 +14,26 @@ import (
 	r "github.com/michaelzhan1/url-shortener/internals/runtime"
 )
 
-// TODO: use httptest
 func TestNewUrl(t *testing.T) {
+	// setup
 	loadDotEnv()
-	defer cleanup()
+	defer dbCleanup()
 
 	server := r.SetupServer()
 	defer server.Close()
 
+	// run server
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			t.Errorf("Server failed to start: %v", err)
 		}
 		t.Log("Server closed")
 	}()
-
 	time.Sleep(1 * time.Second)
-	goalUrl := "https://www.example.com"
-	httpUrl := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/api/new?url=" + url.QueryEscape(goalUrl)
 
-	resp, err := http.Get(httpUrl)
+	// make request
+	goalUrl := "https://www.example.com"
+	resp, err := http.Get(fmt.Sprintf("%s:%s/api/new?url=%s", os.Getenv("HOST"), os.Getenv("PORT"), url.QueryEscape(goalUrl)))
 	if err != nil {
 		t.Errorf("Failed to make request: %v", err)
 	}
@@ -42,17 +43,12 @@ func TestNewUrl(t *testing.T) {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
-	// get text from body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("Failed to read response body: %v", err)
-	}
-
+	// get id from body
+	body, _ := io.ReadAll(resp.Body)
 	id := string(body)
 	
-	// get url back from db
-	httpUrl = os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/" + id
-	resp, err = http.Get(httpUrl)
+	// check redirect
+	resp, err = http.Get(fmt.Sprintf("%s:%s/%s", os.Getenv("HOST"), os.Getenv("PORT"), id))
 	if err != nil {
 		t.Errorf("Failed to make request: %v", err)
 	}
@@ -62,25 +58,21 @@ func TestNewUrl(t *testing.T) {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
-	// get text from body
-	body, err = io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("Failed to read response body: %v", err)
-	}
-	recoveredUrl, _ := url.QueryUnescape(string(body))
-
-	if recoveredUrl != goalUrl {
-		t.Errorf("Expected url %s, got %s", goalUrl, recoveredUrl)
+	location := resp.Request.URL.String()
+	if location != goalUrl {
+		t.Errorf("Expected location %s, got %s", goalUrl, location)
 	}
 }
 
 func TestCustomUrl(t *testing.T) {
+	// setup
 	loadDotEnv()
-	defer cleanup()
+	defer dbCleanup()
 
 	server := r.SetupServer()
 	defer server.Close()
 
+	// run server
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			t.Errorf("Server failed to start: %v", err)
@@ -89,11 +81,10 @@ func TestCustomUrl(t *testing.T) {
 	}()
 
 	time.Sleep(1 * time.Second)
+
 	goalId := "abcde"
 	goalUrl := "https://www.example.com"
-	httpUrl := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/api/new/custom?url=" + url.QueryEscape(goalUrl) + "&id=" + goalId
-
-	resp, err := http.Get(httpUrl)
+	resp, err := http.Get(fmt.Sprintf("%s:%s/api/new/custom?url=%s&id=%s", os.Getenv("HOST"), os.Getenv("PORT"), url.QueryEscape(goalUrl), goalId))
 	if err != nil {
 		t.Errorf("Failed to make request: %v", err)
 	}
@@ -103,9 +94,8 @@ func TestCustomUrl(t *testing.T) {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 	
-	// get url back from db
-	httpUrl = os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/" + goalId
-	resp, err = http.Get(httpUrl)
+	// check redirect
+	resp, err = http.Get(fmt.Sprintf("%s:%s/%s", os.Getenv("HOST"), os.Getenv("PORT"), goalId))
 	if err != nil {
 		t.Errorf("Failed to make request: %v", err)
 	}
@@ -115,15 +105,9 @@ func TestCustomUrl(t *testing.T) {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
-	// get text from body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("Failed to read response body: %v", err)
-	}
-	recoveredUrl, _ := url.QueryUnescape(string(body))
-
-	if recoveredUrl != goalUrl {
-		t.Errorf("Expected url %s, got %s", goalUrl, recoveredUrl)
+	location := resp.Request.URL.String()
+	if location != goalUrl {
+		t.Errorf("Expected location %s, got %s", goalUrl, location)
 	}
 }
 
@@ -137,7 +121,7 @@ func loadDotEnv() {
 	}
 }
 
-func cleanup() {
+func dbCleanup() {
 	os.Remove("tmp/shortener.db")
 	os.Remove("tmp")
 }
