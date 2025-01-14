@@ -9,7 +9,14 @@ import (
 	"github.com/michaelzhan1/url-shortener/internals/db"
 )
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "GET")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+}
+
 func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	if r.Method != "GET" {
 		log.Printf("Method %s not allowed", r.Method)
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -32,6 +39,7 @@ func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewCustomUrlHandler(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	if r.Method != "GET" {
 		log.Printf("Method %s not allowed", r.Method)
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -55,6 +63,7 @@ func NewCustomUrlHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UrlGetterHandler(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	if r.Method != "GET" {
 		log.Printf("Method %s not allowed", r.Method)
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
